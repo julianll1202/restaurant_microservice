@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% set title = 'Recibos' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="fw-bold">Recibos de venta</h1>
+      <table class="table mt-3">
+        <thead>
+          <tr class="table-dark">
+            <th scope="col">#</th>
+            <th scope="col">Mesero <i class="bi bi-person-fill"></i></th>
+            <th scope="col">Mesa #</th>
+            <th scope="col">Fecha <i class="bi bi-calendar"></i></th>
+            <th scope="col">Hora <i class="bi bi-clock"></i></th>
+            <th scope="col">Total <i class="bi bi-coin"></i></th>
+          </tr>
+        </thead>
+        <tbody>
+        {% for recibo in ventas %}
+          <tr>
+            <th scope="row">{{ recibo.ventaId }}</th>
+            <td>{{recibo.mesero}}</td>
+            <td>{{ recibo.numMesa}}</td>
+            <td>{{ recibo.fecha }}</td>
+            <td>{{ recibo.hora }}</td>
+            <td>${{ recibo.precioFinal }} MXN</td>
+          </tr>
+        {% endfor %}
+          </tbody>
+        </table>
+</div>
+{% endblock %}

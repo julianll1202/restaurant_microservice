@@ -1,0 +1,85 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// model Users {
+//   userId Int @id @default(autoincrement())
+//   username String
+//   password String
+//   updatedAt DateTime @updatedAt
+//   roleId Int
+//   role Roles @relation(fields: [roleId], references: [roleId])
+//   refreshTokens RefreshToken[]
+// }
+
+// model Roles {
+//   roleId Int @id @default(autoincrement())
+//   roleName String
+//   users Users[]
+// }
+
+// model RefreshToken {
+//   id String @id @unique @default(uuid())
+//   hashedToken String @db.VarChar(255)
+//   userId Int
+//   user Users @relation(fields: [userId], references: [userId])
+//   revoked Boolean @default(false)
+//   createdAt DateTime @default(now())
+//   updatedAt DateTime @updatedAt
+// }
+
+model Platillos {
+  platilloId Int @id @default(autoincrement())
+  nombre String @unique
+  precio Decimal
+  platillosEnVentas PlatillosEnVentas[]
+}
+
+// model Meseros {
+//   empleadoId Int @id @default(autoincrement())
+//   nombre String
+//   ventas Ventas[]
+// }
+
+
+// model Mesas {
+//   mesaId Int @id @default(autoincrement())
+//   capacidad Int
+//   ubicacion String @db.Text
+//   tipoMesa String
+//   ocupada Boolean @default(false)
+//   ventas Ventas[]
+// }
+
+model Ventas {
+  ventaId Int @id @default(autoincrement())
+  comandaId Int
+  mesero String
+  // mesero Meseros @relation(fields: [meseroId], references: [empleadoId])
+  numMesa Int
+  // mesa Mesas @relation(fields: [mesaId], references: [mesaId])
+  precioFinal Decimal?
+  fechaCreacion DateTime
+  platillosEnVentas PlatillosEnVentas[]
+}
+
+
+model PlatillosEnVentas {
+  cantidad Int
+  platilloId Int
+  platillo Platillos @relation(fields: [platilloId], references: [platilloId])
+  ventaId Int
+  venta Ventas @relation(fields: [ventaId], references: [ventaId])
+  @@id([platilloId, ventaId])
+}

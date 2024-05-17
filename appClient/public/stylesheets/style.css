@@ -1,0 +1,19 @@
+body {
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+
+a {
+  color: #00B7FF;
+}
+
+main {
+  display: flex;
+  flex-direction: row;
+  justify-content: start;
+}
+.mesas {
+  display: grid;
+  grid-template-columns: 22% 22% 22% 22%;
+  gap: 5%;
+  padding: 20px;
+}

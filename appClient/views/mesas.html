@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+
+{% set title = 'Comandas' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="fw-bold">Comandas</h1>
+    <div class="mesas mt-3">
+        {% for comanda in comandas %}
+        <div class="card" style="width: 18rem;">
+            <div class="card-body">
+              <h5 class="card-title" id="mesa-{{comanda.comandaId}}">Mesa #{{ comanda.mesaId }}</h5>
+              <h6 class="card-subtitle mb-2 text-body-secondary" id="mesero-{{comanda.comandaId}}">Mesero: {{ comanda.empleado.empleadoNombre }} {{ comanda.empleado.paterno }} {{ comanda.empleado.materno }}</h6>
+              <h6 class="card-subtitle mb-2 text-body-secondary" data-fecha="{{comanda.fechaCreacion}}" id="fecha-{{comanda.comandaId}}">Fecha: {{ comanda.fecha }}</h6>
+              <h6 class="card-subtitle mb-2 text-body-secondary" id="hora-{{comanda.comandaId}}">Hora: {{ comanda.hora }}</h6>
+              <ul class="card-text" id="platillos-{{ comanda.comandaId }}" data-cantidad="{{ comanda.platillos.length }}">
+                {% for p in comanda.platillos %}
+                <li id="platillo-{{ p.platillo.platilloId}}">{{p.cantidad}} - {{p.platillo.platilloNombre}} - ${{p.platillo.precio*p.cantidad}}</li>
+                {% endfor %}
+              </ul>
+              <p id="total-{{ comanda.comandaId }}"><span class="badge rounded-pill text-bg-success" >Total</span> ${{comanda.precioFinal}} MXN</p>
+              <button type="button" class="card-link btn btn-primary" data-bs-toggle="modal" data-bs-target="#comanda-{{comanda.comandaId}}">
+                Expandir <i class="bi bi-arrows-angle-expand"></i>
+              </button>
+            </div>
+        </div>
+        <!-- Modal -->
+        <div class="modal fade" id="comanda-{{comanda.comandaId}}" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Comanda # {{comanda.comandaId}}</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <h6><span class="badge rounded-pill text-bg-secondary">Mesero <i class="m-lg-1 bi-people"></i></span> {{ comanda.mesero }}</h6>
+                    <h6><span class="badge rounded-pill text-bg-secondary">Fecha <i class="m-lg-1 bi bi-calendar"></i></span> {{ comanda.fechaCreacion.split("T")[0] }}</h6>
+                    <h6><span class="badge rounded-pill text-bg-secondary">Hora <i class="m-lg-1 bi bi-clock-fill"></i></span> {{ comanda.fechaCreacion.split("T")[1] }}</h6>
+                    <h6>Lista de platillos</h6>
+                    <ul class="card-text">
+                        {% for p in comanda.platillos %}
+                        <li>{{p.cantidad}} - {{p.platillo.platilloNombre}} - ${{p.platillo.precio*p.cantidad}}</li>
+                        {% endfor %}
+                    </ul>
+                    <p><span class="badge rounded-pill text-bg-success">Precio final</span> ${{comanda.precioFinal}} MXN</p>
+                    <h6><span class="badge rounded-pill text-bg-secondary">Mesa</span> #{{ comanda.mesaId }}</h6>
+                    <h6><span class="badge rounded-pill text-bg-secondary">Ubicación</span> {{ comanda.ubicacion }}</h6>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"  data-bs-dismiss="modal">Cerrar</button>
+                    <button type="button" class="btn btn-primary" data-code={{ comanda.comandaId }} onclick="saveVenta(this)">Guardar</button>
+                </div>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+          <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+              <i class="m-2 bi bi-check2-circle text-success"></i>
+              <strong class="me-auto">Operación exitosa</strong>
+              <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+              El recibo fue guardado exitosamente.
+            </div>
+          </div>
+        </div>
+        <!-- Error toast -->
+        <div class="toast-container position-fixed bottom-0 end-0 p-3">
+          <div id="liveToast-Err" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+              <i class="m-2 bi bi bi-exclamation-circle-fill text-danger"></i>
+              <strong class="me-auto">Error</strong>
+              <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body">
+              Lo sentimos, ocurrió un error y no se pudo guardar el recibo.
+            </div>
+          </div>
+        </div>
+        
+    </div>
+    <!-- Button trigger modal -->
+</div>
+<script>
+  const toast = document.getElementById('liveToast')
+  const toastErr = document.getElementById('liveToastErr')
+  const toastBootstrap = bootstrap.Toast.getOrCreateInstance(toast)
+  const toastBootstrapErr = bootstrap.Toast.getOrCreateInstance(toastErr)
+  async function saveVenta (element) {
+    const index = element.getAttribute("data-code");
+    console.log(document.getElementById(`total-${index}`).innerText.split(new RegExp("[$|MXN]")));
+    const venta = {
+      comandaId: Number(index),
+      mesaId: Number(document.getElementById(`mesa-${index}`).innerText.split("#")[1]),
+      mesero: document.getElementById(`mesero-${index}`).innerText.split(":")[1].trim(),
+      fechaCreacion: `${document.getElementById(`fecha-${index}`).getAttribute('data-fecha')}`,
+      precioFinal: Number(document.getElementById(`total-${index}`).innerText.split(new RegExp("[$|MXN]"))[1]),
+    };
+    const elementPlatillos = document.getElementById(`platillos-${index}`)
+    const cantidadPlatillos = Number(elementPlatillos.getAttribute("data-cantidad"))
+    const platillos = []
+    const platillosHTML = Array.from(elementPlatillos.children)
+    platillosHTML.forEach((platillo) => {
+      const info = platillo.innerText.split("-")
+      console.log(info)
+      platillos.push({
+        platilloId: Number(platillo.id.split("-")[1]),
+        nombre: info[1],
+        cantidad: Number(info[0]),
+        precio: Number(info[2].split("$")[1])/Number(info[0])
+      })
+    })
+    venta['platillosEnVenta'] = platillos
+    console.log(venta);
+
+    // Usa ids en los input y usa hidden inputs para comandaId o platilloId
+    const res = await fetch('/ventas/crear', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(venta)
+    })
+    if (res.status === 200) {
+      toastBootstrap.show()
+    } else {
+      toastBootstrapErr.show()
+    }
+  }
+</script>
+{% endblock %}
